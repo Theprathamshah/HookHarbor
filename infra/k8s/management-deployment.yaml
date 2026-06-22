@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hookharbor-management
+  labels:
+    app: hookharbor-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hookharbor-management
+  template:
+    metadata:
+      labels:
+        app: hookharbor-management
+    spec:
+      containers:
+      - name: management-api
+        image: hookharbor-management:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:postgres@postgres-service:5432/hookharbor"
+        - name: RABBITMQ_URL
+          value: "amqp://guest:guest@rabbitmq-service:5672/"
+        - name: ADMIN_API_KEY
+          value: "hookharbor_admin_secret_key"
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hookharbor-management-service
+spec:
+  selector:
+    app: hookharbor-management
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

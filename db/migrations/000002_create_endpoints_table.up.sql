@@ -1,0 +1,13 @@
+CREATE TABLE endpoints (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    target_url TEXT NOT NULL,
+    secret VARCHAR(128) NOT NULL,
+    max_retries INTEGER DEFAULT 5 NOT NULL,
+    active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_endpoints_user_id ON endpoints(user_id);

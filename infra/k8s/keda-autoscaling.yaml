@@ -1,0 +1,32 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: rabbitmq-dispatcher-scaledobject
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hookharbor-dispatcher
+  minReplicaCount: 1
+  maxReplicaCount: 20
+  cooldownPeriod: 30
+  pollingInterval: 5
+  triggers:
+  - type: rabbitmq
+    metadata:
+      queueName: webhook.jobsQueue
+      queueLength: "20" # Target value: spin up 1 replica per 20 items in queue
+    authenticationRef:
+      name: keda-rabbitmq-auth
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-rabbitmq-auth
+  namespace: default
+spec:
+  secretTargetRef:
+  - parameter: host
+    name: rabbitmq-secret
+    key: hostURL # e.g. amqp://guest:guest@rabbitmq-service:5672/
